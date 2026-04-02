@@ -527,7 +527,7 @@
         </div>
         <div class="hero-visual">
             <!-- Inline SVG Illustration -->
-            <svg class="hero-illustration" viewBox="0 0 520 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="hero-illustration" viewBox="0 0 520 480" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- Background glow -->
                 <defs>
                     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -552,11 +552,12 @@
                     </filter>
                 </defs>
 
-                <!-- Main card background (tools only) -->
-                <rect x="60" y="40" width="400" height="220" rx="24" fill="#1a1a24" stroke="url(#grad2)" stroke-width="2"/>
+                <!-- Main card / Comic panel background -->
+                <rect x="60" y="40" width="400" height="400" rx="24" fill="#1a1a24" stroke="url(#grad2)" stroke-width="2"/>
 
-                <!-- Divider between two panels -->
+                <!-- Comic grid lines -->
                 <line x1="260" y1="40" x2="260" y2="260" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+                <line x1="60" y1="260" x2="460" y2="260" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
 
                 <!-- Panel 1: Claude Code Terminal -->
                 <rect x="80" y="60" width="170" height="185" rx="12" fill="#0d1117"/>
@@ -594,15 +595,49 @@
                 <line x1="314" y1="190" x2="326" y2="198" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
                 <line x1="354" y1="198" x2="366" y2="187" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
 
-                <!-- Arrow connecting two tool panels -->
-                <path d="M 250 150 L 270 150" stroke="url(#grad2)" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <!-- Panel 3: Output - Comic panels -->
+                <rect x="80" y="275" width="380" height="150" rx="12" fill="#141420"/>
+                <!-- Mini comic panels -->
+                <rect x="95" y="290" width="80" height="90" rx="8" fill="#1e1e2e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <rect x="95" y="290" width="80" height="90" rx="8" fill="url(#grad1)" opacity="0.3"/>
+                <!-- Person icon in panel -->
+                <circle cx="125" cy="320" r="12" fill="rgba(255,80,180,0.2)" stroke="#FF50B4" stroke-width="1.5"/>
+                <text x="119" y="325" font-size="14">👤</text>
+                <rect x="103" y="345" width="64" height="4" rx="2" fill="rgba(255,255,255,0.15)"/>
+                <rect x="103" y="353" width="48" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
+                <rect x="103" y="361" width="56" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
 
-                <!-- "AI Tools" label at bottom -->
-                <text x="200" y="280" font-family="sans-serif" font-size="12" fill="rgba(255,255,255,0.4)" text-anchor="middle">⚡ AI 도구</text>
-                <text x="320" y="280" font-family="sans-serif" font-size="12" fill="rgba(255,255,255,0.4)" text-anchor="middle">🎨 이미지 생성</text>
+                <!-- Speech bubble -->
+                <rect x="190" y="290" width="80" height="90" rx="8" fill="#1e1e2e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <!-- Bubble shape -->
+                <rect x="200" y="300" width="60" height="35" rx="10" fill="rgba(139,92,246,0.15)" stroke="#8B5CF6" stroke-width="1"/>
+                <text x="210" y="323" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,0.6)">Step 1</text>
+                <text x="214" y="360" font-size="22">📋</text>
+                <rect x="198" y="370" width="64" height="4" rx="2" fill="rgba(255,255,255,0.15)"/>
+
+                <rect x="285" y="290" width="80" height="90" rx="8" fill="#1e1e2e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <text x="305" y="330" font-size="28">🎨</text>
+                <text x="295" y="358" font-family="sans-serif" font-size="10" fill="rgba(255,255,255,0.6)" text-anchor="start">Complete!</text>
+                <rect x="293" y="370" width="64" height="4" rx="2" fill="rgba(255,255,255,0.15)"/>
+
+                <rect x="380" y="290" width="65" height="90" rx="8" fill="#1e1e2e" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <text x="396" y="330" font-size="26">✅</text>
+                <rect x="388" y="350" width="50" height="4" rx="2" fill="rgba(6,214,160,0.4)"/>
+                <rect x="388" y="360" width="40" height="4" rx="2" fill="rgba(6,214,160,0.3)"/>
+                <rect x="388" y="370" width="45" height="4" rx="2" fill="rgba(6,214,160,0.3)"/>
+
+                <!-- Output label -->
+                <text x="200" y="415" font-family="sans-serif" font-size="11" fill="rgba(255,255,255,0.45)">→ 업무 가이드 만화 자동 생성</text>
+
+                <!-- Arrows connecting panels -->
+                <path d="M 250 170 L 270 170" stroke="url(#grad2)" stroke-width="2" marker-end="url(#arrowhead)"/>
+                <path d="M 260 245 L 260 275" stroke="url(#grad3)" stroke-width="2" marker-end="url(#arrowhead2)"/>
                 <defs>
                     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
                         <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6"/>
+                    </marker>
+                    <marker id="arrowhead2" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#4D8EFF"/>
                     </marker>
                 </defs>
 
@@ -610,72 +645,19 @@
                 <circle cx="40" cy="100" r="3" fill="#FF50B4" opacity="0.6">
                     <animate attributeName="cy" values="100;80;100" dur="4s" repeatCount="indefinite"/>
                 </circle>
-                <circle cx="490" cy="150" r="4" fill="#4D8EFF" opacity="0.5">
-                    <animate attributeName="cy" values="150;120;150" dur="5s" repeatCount="indefinite"/>
+                <circle cx="490" cy="200" r="4" fill="#4D8EFF" opacity="0.5">
+                    <animate attributeName="cy" values="200;170;200" dur="5s" repeatCount="indefinite"/>
                 </circle>
-                <circle cx="30" cy="220" r="2.5" fill="#06D6A0" opacity="0.5">
-                    <animate attributeName="cy" values="220;200;220" dur="4.5s" repeatCount="indefinite"/>
+                <circle cx="480" cy="380" r="3" fill="#8B5CF6" opacity="0.4">
+                    <animate attributeName="cy" values="380;360;380" dur="3.5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="30" cy="350" r="2.5" fill="#06D6A0" opacity="0.5">
+                    <animate attributeName="cy" values="350;330;350" dur="4.5s" repeatCount="indefinite"/>
                 </circle>
             </svg>
         </div>
     </div>
 
-    <!-- CSS Comic Strip Output -->
-    <div class="comic-strip fade-up">
-        <div style="text-align:center; width:100%; margin-bottom:16px;">
-            <span style="font-size:13px; color:var(--accent-cyan); font-weight:700; letter-spacing:1px;">▼ OUTPUT: 업무 가이드 만화</span>
-        </div>
-    </div>
-    <div class="comic-strip fade-up">
-        <!-- Panel 1 -->
-        <div class="comic-panel">
-            <span class="panel-number">1</span>
-            <div class="speed-lines"></div>
-            <div class="panel-content">
-                <div class="speech-bubble">오늘부터 신입사원!</div>
-                <div class="panel-emoji" style="margin-top:14px;">👩‍💼</div>
-                <div style="font-size:10px; color:#666; font-weight:600;">첫 출근</div>
-            </div>
-        </div>
-
-        <div class="panel-arrow">→</div>
-
-        <!-- Panel 2 -->
-        <div class="comic-panel">
-            <span class="panel-number">2</span>
-            <div class="panel-content">
-                <div class="speech-bubble">이 매뉴얼대로 해보세요</div>
-                <div class="panel-emoji" style="margin-top:14px;">📋</div>
-                <div style="font-size:10px; color:#666; font-weight:600;">업무 가이드 전달</div>
-            </div>
-            <div class="screen-tone"></div>
-        </div>
-
-        <div class="panel-arrow">→</div>
-
-        <!-- Panel 3 -->
-        <div class="comic-panel">
-            <span class="panel-number">3</span>
-            <div class="panel-content">
-                <div class="speech-bubble" style="font-size:10px;">한눈에 이해됐어요!</div>
-                <div class="panel-emoji" style="margin-top:14px;">💡</div>
-                <div style="font-size:10px; color:#666; font-weight:600;">만화로 쉽게 이해</div>
-            </div>
-        </div>
-
-        <div class="panel-arrow">→</div>
-
-        <!-- Panel 4: Burst finish -->
-        <div class="comic-panel">
-            <span class="panel-number">4</span>
-            <div class="burst-bg"></div>
-            <div class="panel-content" style="z-index:2;">
-                <div class="action-text">완벽!</div>
-                <div class="panel-emoji">🎉</div>
-                <div style="font-size:10px; color:#555; font-weight:700;">업무 마스터</div>
-            </div>
-        </div>
-    </div>
 </section>
 
 <!-- Stats -->

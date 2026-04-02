@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클로드 코드 + Gemini API로 업무 가이드를 위한 만화 만들기</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #121218;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #22222e;
+            --accent-pink: #FF50B4;
+            --accent-blue: #4D8EFF;
+            --accent-purple: #8B5CF6;
+            --accent-cyan: #06D6A0;
+            --accent-orange: #FF6B35;
+            --accent-gradient: linear-gradient(135deg, #FF50B4, #8B5CF6, #4D8EFF);
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255,255,255,0.7);
+            --text-muted: rgba(255,255,255,0.45);
+            --border-subtle: rgba(255,255,255,0.08);
+            --radius: 16px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ─── Floating Nav ─── */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.3s;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto;
+            padding: 16px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+        .nav-logo span { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a {
+            color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-cta {
+            background: var(--accent-gradient); color: #fff; border: none;
+            padding: 10px 24px; border-radius: 100px; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(255,80,180,0.3); }
+
+        /* ─── Hero Section ─── */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 120px 24px 80px;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 40%, rgba(139,92,246,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 30%, rgba(255,80,180,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 80%, rgba(77,142,255,0.1) 0%, transparent 60%);
+            z-index: 0;
+        }
+        .hero-grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+        .hero-content {
+            position: relative; z-index: 1;
+            max-width: 1200px; width: 100%;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+        }
+        .hero-text { }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,80,180,0.12); border: 1px solid rgba(255,80,180,0.25);
+            padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 600;
+            color: var(--accent-pink); margin-bottom: 24px;
+        }
+        .hero-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-pink); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .hero-title {
+            font-size: 52px; font-weight: 900; line-height: 1.2;
+            letter-spacing: -1.5px; margin-bottom: 20px;
+        }
+        .hero-title .highlight {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+            font-size: 18px; color: var(--text-secondary); line-height: 1.8;
+            margin-bottom: 36px; max-width: 500px;
+        }
+        .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+        .btn-primary {
+            background: var(--accent-gradient); color: #fff; border: none;
+            padding: 16px 36px; border-radius: 100px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255,80,180,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,80,180,0.4); }
+        .btn-secondary {
+            background: transparent; color: var(--text-primary);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 16px 36px; border-radius: 100px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .btn-secondary:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+
+        .hero-visual {
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* ─── Hero SVG Illustration ─── */
+        .hero-illustration {
+            width: 100%; max-width: 520px;
+            filter: drop-shadow(0 20px 60px rgba(139,92,246,0.3));
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* ─── Comic Strip (CSS-based output) ─── */
+        .comic-strip {
+            position: relative; z-index: 1;
+            max-width: 1200px; width: 100%;
+            margin: -20px auto 0;
+            display: flex; gap: 0; justify-content: center;
+        }
+        .comic-panel {
+            width: 170px; height: 200px;
+            background: #faf3e0;
+            border: 3px solid #222;
+            position: relative; overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .comic-panel:hover { transform: translateY(-6px); z-index: 2; }
+        .comic-panel:not(:first-child) { margin-left: -3px; }
+        .comic-panel .panel-number {
+            position: absolute; top: 6px; left: 8px;
+            background: #222; color: #fff; font-size: 10px; font-weight: 800;
+            padding: 2px 8px; border-radius: 3px; z-index: 3;
+        }
+        /* Speed lines background */
+        .comic-panel .speed-lines {
+            position: absolute; inset: 0;
+            background: repeating-conic-gradient(
+                rgba(0,0,0,0.03) 0deg, transparent 4deg, transparent 8deg
+            );
+            background-position: center;
+        }
+        /* Panel content */
+        .comic-panel .panel-content {
+            position: relative; z-index: 2;
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 28px 12px 12px;
+        }
+        .comic-panel .panel-emoji { font-size: 48px; margin-bottom: 8px; }
+        /* Speech bubble */
+        .speech-bubble {
+            background: #fff; border: 2px solid #333; border-radius: 16px;
+            padding: 6px 12px; font-size: 11px; font-weight: 700; color: #333;
+            position: relative; max-width: 130px; text-align: center;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .speech-bubble::after {
+            content: ''; position: absolute; bottom: -10px; left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #333;
+        }
+        .speech-bubble::before {
+            content: ''; position: absolute; bottom: -7px; left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #fff;
+            z-index: 1;
+        }
+        /* Manga burst effect */
+        .burst-bg {
+            position: absolute; inset: 0;
+            background:
+                conic-gradient(from 0deg at 50% 50%,
+                    #FFE066 0deg, #faf3e0 15deg,
+                    #FFE066 30deg, #faf3e0 45deg,
+                    #FFE066 60deg, #faf3e0 75deg,
+                    #FFE066 90deg, #faf3e0 105deg,
+                    #FFE066 120deg, #faf3e0 135deg,
+                    #FFE066 150deg, #faf3e0 165deg,
+                    #FFE066 180deg, #faf3e0 195deg,
+                    #FFE066 210deg, #faf3e0 225deg,
+                    #FFE066 240deg, #faf3e0 255deg,
+                    #FFE066 270deg, #faf3e0 285deg,
+                    #FFE066 300deg, #faf3e0 315deg,
+                    #FFE066 330deg, #faf3e0 345deg,
+                    #FFE066 360deg
+                );
+            opacity: 0.5;
+        }
+        /* Screen tone pattern */
+        .screen-tone {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+            background: radial-gradient(circle, #ccc 1px, transparent 1px);
+            background-size: 6px 6px;
+            opacity: 0.25;
+        }
+        /* Manga action text */
+        .action-text {
+            font-size: 22px; font-weight: 900; color: #333;
+            text-shadow: 2px 2px 0 #FFE066, -1px -1px 0 #FFE066;
+            letter-spacing: -1px;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        /* Panel connector arrow */
+        .panel-arrow {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; color: var(--text-muted); margin: 0 -6px;
+            z-index: 5; position: relative;
+        }
+        @media (max-width: 768px) {
+            .comic-strip { flex-wrap: wrap; gap: 12px; padding: 0 16px; }
+            .comic-panel { width: 140px; height: 170px; }
+            .comic-panel:not(:first-child) { margin-left: 0; }
+            .panel-arrow { display: none; }
+        }
+
+        /* ─── Stats Bar ─── */
+        .stats {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 48px 24px;
+        }
+        .stats-inner {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;
+            text-align: center;
+        }
+        .stat-item {}
+        .stat-number {
+            font-size: 36px; font-weight: 900; letter-spacing: -1px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+        /* ─── Section Common ─── */
+        .section { padding: 100px 24px; }
+        .section-header { text-align: center; margin-bottom: 64px; }
+        .section-tag {
+            display: inline-block;
+            background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.25);
+            padding: 6px 16px; border-radius: 100px;
+            font-size: 13px; font-weight: 600; color: var(--accent-purple);
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 40px; font-weight: 800; letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+        .section-desc { font-size: 16px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+
+        /* ─── What You'll Learn ─── */
+        .learn-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .learn-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            padding: 36px 28px;
+            transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .learn-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--accent-gradient); opacity: 0; transition: opacity 0.3s;
+        }
+        .learn-card:hover { background: var(--bg-card-hover); transform: translateY(-4px); }
+        .learn-card:hover::before { opacity: 1; }
+        .learn-icon {
+            width: 56px; height: 56px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; margin-bottom: 20px;
+        }
+        .learn-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.3px; }
+        .learn-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+        /* ─── Curriculum ─── */
+        .curriculum { background: var(--bg-secondary); }
+        .curriculum-inner { max-width: 900px; margin: 0 auto; }
+        .cur-chapter {
+            margin-bottom: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .cur-header {
+            padding: 24px 28px;
+            display: flex; align-items: center; gap: 16px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .cur-header:hover { background: var(--bg-card-hover); }
+        .cur-num {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 800; color: #fff; flex-shrink: 0;
+        }
+        .cur-header-text h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+        .cur-header-text p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .cur-toggle {
+            margin-left: auto; font-size: 20px; color: var(--text-muted);
+            transition: transform 0.3s;
+        }
+        .cur-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+        }
+        .cur-body.open { max-height: 600px; }
+        .cur-list { padding: 0 28px 24px; padding-left: 84px; }
+        .cur-list li {
+            position: relative;
+            font-size: 14px; color: var(--text-secondary);
+            padding: 8px 0 8px 20px; line-height: 1.6;
+            border-left: 2px solid var(--border-subtle);
+            list-style: none;
+        }
+        .cur-list li::before {
+            content: ''; position: absolute; left: -5px; top: 14px;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent-purple); border: 2px solid var(--bg-card);
+        }
+        .cur-list li strong { color: var(--text-primary); }
+
+        /* ─── Tools Section ─── */
+        .tools-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+        }
+        .tool-card {
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius); padding: 36px;
+            display: flex; align-items: flex-start; gap: 20px;
+            transition: all 0.3s;
+        }
+        .tool-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); }
+        .tool-logo {
+            width: 64px; height: 64px; border-radius: 16px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px;
+        }
+        .tool-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+        .tool-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+        /* ─── Timeline Process ─── */
+        .process-inner {
+            max-width: 900px; margin: 0 auto;
+            position: relative;
+        }
+        .process-line {
+            position: absolute; left: 32px; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, var(--accent-pink), var(--accent-purple), var(--accent-blue));
+        }
+        .process-step {
+            position: relative; padding-left: 80px; margin-bottom: 48px;
+        }
+        .process-dot {
+            position: absolute; left: 22px; top: 4px;
+            width: 22px; height: 22px; border-radius: 50%;
+            border: 3px solid var(--accent-purple);
+            background: var(--bg-primary);
+        }
+        .process-step h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .process-step p { font-size: 15px; color: var(--text-secondary); }
+
+        /* ─── Instructor ─── */
+        .instructor-card {
+            max-width: 900px; margin: 0 auto;
+            background: var(--bg-card); border: 1px solid var(--border-subtle);
+            border-radius: var(--radius); padding: 48px;
+            display: flex; gap: 40px; align-items: center;
+        }
+        .instructor-avatar {
+            width: 180px; height: 180px; border-radius: 24px; flex-shrink: 0;
+            background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 80px;
+            border: 2px solid var(--border-subtle);
+        }
+        .instructor-info h3 { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+        .instructor-role { font-size: 14px; color: var(--accent-pink); font-weight: 600; margin-bottom: 16px; }
+        .instructor-bio { font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px; }
+        .instructor-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .instructor-tag {
+            background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);
+            padding: 6px 14px; border-radius: 100px;
+            font-size: 13px; color: var(--accent-purple); font-weight: 500;
+        }
+
+        /* ─── CTA Section ─── */
+        .cta-section {
+            padding: 100px 24px;
+            text-align: center;
+            position: relative;
+        }
+        .cta-section::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,80,180,0.1) 0%, transparent 60%);
+        }
+        .cta-content { position: relative; z-index: 1; }
+        .cta-title { font-size: 36px; font-weight: 800; margin-bottom: 16px; letter-spacing: -1px; }
+        .cta-desc { font-size: 16px; color: var(--text-secondary); margin-bottom: 36px; }
+        .cta-btn {
+            display: inline-block; background: var(--accent-gradient); color: #fff;
+            padding: 20px 56px; border-radius: 100px; font-size: 18px; font-weight: 700;
+            text-decoration: none; transition: all 0.3s;
+            box-shadow: 0 4px 24px rgba(255,80,180,0.3);
+        }
+        .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(255,80,180,0.4); }
+
+        /* ─── Footer ─── */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-subtle);
+            padding: 40px 24px; text-align: center;
+            font-size: 13px; color: var(--text-muted);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .hero-content { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+            .hero-title { font-size: 32px; }
+            .hero-subtitle { margin: 0 auto 28px; }
+            .hero-buttons { justify-content: center; }
+            .hero-visual { order: -1; }
+            .hero-illustration { max-width: 320px; }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); }
+            .learn-grid { grid-template-columns: 1fr; }
+            .tools-grid { grid-template-columns: 1fr; }
+            .section-title { font-size: 28px; }
+            .instructor-card { flex-direction: column; text-align: center; }
+            .instructor-tags { justify-content: center; }
+            .nav-links { display: none; }
+            .cur-list { padding-left: 60px; }
+        }
+
+        /* ─── Animations ─── */
+        .fade-up {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.6s, transform 0.6s;
+        }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav">
+    <div class="nav-inner">
+        <div class="nav-logo"><span>F&amp;F</span> Process AX team</div>
+        <div class="nav-links">
+            <a href="#learn">배울 내용</a>
+            <a href="#curriculum">커리큘럼</a>
+            <a href="#tools">활용 도구</a>
+            <a href="#instructor">강사 소개</a>
+        </div>
+        <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">수강 신청</button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                오프라인 현장 강의 · F&amp;F 사옥 7층 4번룸
+            </div>
+            <h1 class="hero-title">
+                <span class="highlight">클로드 코드</span> +<br>
+                <span class="highlight">Gemini API</span>로<br>
+                업무 가이드를 위한<br>
+                <span class="highlight">만화</span> 만들기
+            </h1>
+            <p class="hero-subtitle">
+                AI 코딩 도구와 멀티모달 API를 활용해<br>
+                복잡한 업무 매뉴얼을 누구나 이해하기 쉬운<br>
+                만화 형태의 가이드로 자동 변환하는 실전 워크숍
+            </p>
+            <div class="hero-buttons">
+                <button class="btn-primary" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">지금 신청하기</button>
+                <button class="btn-secondary" onclick="document.getElementById('curriculum').scrollIntoView({behavior:'smooth'})">커리큘럼 보기</button>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <!-- Inline SVG Illustration -->
+            <svg class="hero-illustration" viewBox="0 0 520 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background glow -->
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FF50B4;stop-opacity:0.3"/>
+                        <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:0.2"/>
+                        <stop offset="100%" style="stop-color:#4D8EFF;stop-opacity:0.3"/>
+                    </linearGradient>
+                    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FF50B4"/>
+                        <stop offset="100%" style="stop-color:#8B5CF6"/>
+                    </linearGradient>
+                    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4D8EFF"/>
+                        <stop offset="100%" style="stop-color:#06D6A0"/>
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Main card background (tools only) -->
+                <rect x="60" y="40" width="400" height="220" rx="24" fill="#1a1a24" stroke="url(#grad2)" stroke-width="2"/>
+
+                <!-- Divider between two panels -->
+                <line x1="260" y1="40" x2="260" y2="260" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+
+                <!-- Panel 1: Claude Code Terminal -->
+                <rect x="80" y="60" width="170" height="185" rx="12" fill="#0d1117"/>
+                <!-- Terminal header -->
+                <rect x="80" y="60" width="170" height="28" rx="12" fill="#161b22"/>
+                <circle cx="96" cy="74" r="5" fill="#FF5F56"/>
+                <circle cx="112" cy="74" r="5" fill="#FFBD2E"/>
+                <circle cx="128" cy="74" r="5" fill="#27C93F"/>
+                <!-- Terminal content -->
+                <text x="92" y="108" font-family="monospace" font-size="11" fill="#8B5CF6">$ claude</text>
+                <text x="92" y="126" font-family="monospace" font-size="10" fill="#06D6A0">✓ Connected</text>
+                <text x="92" y="144" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.5)">Generating comic...</text>
+                <rect x="92" y="155" width="80" height="6" rx="3" fill="url(#grad2)">
+                    <animate attributeName="width" values="20;130;20" dur="3s" repeatCount="indefinite"/>
+                </rect>
+                <!-- Claude logo stylized -->
+                <text x="92" y="190" font-size="36">🤖</text>
+                <text x="130" y="185" font-family="monospace" font-size="10" fill="#FF50B4" font-weight="bold">Claude</text>
+                <text x="130" y="200" font-family="monospace" font-size="10" fill="#FF50B4">Code</text>
+
+                <!-- Panel 2: Gemini API -->
+                <rect x="270" y="60" width="170" height="185" rx="12" fill="#0f1923"/>
+                <!-- API visual -->
+                <text x="310" y="105" font-size="42">✨</text>
+                <text x="290" y="140" font-family="sans-serif" font-size="14" fill="#4D8EFF" font-weight="bold">Gemini API</text>
+                <text x="290" y="160" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.4)">multimodal</text>
+                <!-- Floating nodes -->
+                <circle cx="300" cy="190" r="14" fill="rgba(77,142,255,0.15)" stroke="#4D8EFF" stroke-width="1.5"/>
+                <text x="294" y="195" font-size="14">📝</text>
+                <circle cx="340" cy="200" r="14" fill="rgba(6,214,160,0.15)" stroke="#06D6A0" stroke-width="1.5"/>
+                <text x="334" y="205" font-size="14">🖼️</text>
+                <circle cx="380" cy="185" r="14" fill="rgba(255,80,180,0.15)" stroke="#FF50B4" stroke-width="1.5"/>
+                <text x="374" y="190" font-size="14">💬</text>
+                <!-- Connection lines -->
+                <line x1="314" y1="190" x2="326" y2="198" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+                <line x1="354" y1="198" x2="366" y2="187" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+
+                <!-- Arrow connecting two tool panels -->
+                <path d="M 250 150 L 270 150" stroke="url(#grad2)" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                <!-- "AI Tools" label at bottom -->
+                <text x="200" y="280" font-family="sans-serif" font-size="12" fill="rgba(255,255,255,0.4)" text-anchor="middle">⚡ AI 도구</text>
+                <text x="320" y="280" font-family="sans-serif" font-size="12" fill="rgba(255,255,255,0.4)" text-anchor="middle">🎨 이미지 생성</text>
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#8B5CF6"/>
+                    </marker>
+                </defs>
+
+                <!-- Floating particles -->
+                <circle cx="40" cy="100" r="3" fill="#FF50B4" opacity="0.6">
+                    <animate attributeName="cy" values="100;80;100" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="490" cy="150" r="4" fill="#4D8EFF" opacity="0.5">
+                    <animate attributeName="cy" values="150;120;150" dur="5s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="30" cy="220" r="2.5" fill="#06D6A0" opacity="0.5">
+                    <animate attributeName="cy" values="220;200;220" dur="4.5s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+    </div>
+
+    <!-- CSS Comic Strip Output -->
+    <div class="comic-strip fade-up">
+        <div style="text-align:center; width:100%; margin-bottom:16px;">
+            <span style="font-size:13px; color:var(--accent-cyan); font-weight:700; letter-spacing:1px;">▼ OUTPUT: 업무 가이드 만화</span>
+        </div>
+    </div>
+    <div class="comic-strip fade-up">
+        <!-- Panel 1 -->
+        <div class="comic-panel">
+            <span class="panel-number">1</span>
+            <div class="speed-lines"></div>
+            <div class="panel-content">
+                <div class="speech-bubble">오늘부터 신입사원!</div>
+                <div class="panel-emoji" style="margin-top:14px;">👩‍💼</div>
+                <div style="font-size:10px; color:#666; font-weight:600;">첫 출근</div>
+            </div>
+        </div>
+
+        <div class="panel-arrow">→</div>
+
+        <!-- Panel 2 -->
+        <div class="comic-panel">
+            <span class="panel-number">2</span>
+            <div class="panel-content">
+                <div class="speech-bubble">이 매뉴얼대로 해보세요</div>
+                <div class="panel-emoji" style="margin-top:14px;">📋</div>
+                <div style="font-size:10px; color:#666; font-weight:600;">업무 가이드 전달</div>
+            </div>
+            <div class="screen-tone"></div>
+        </div>
+
+        <div class="panel-arrow">→</div>
+
+        <!-- Panel 3 -->
+        <div class="comic-panel">
+            <span class="panel-number">3</span>
+            <div class="panel-content">
+                <div class="speech-bubble" style="font-size:10px;">한눈에 이해됐어요!</div>
+                <div class="panel-emoji" style="margin-top:14px;">💡</div>
+                <div style="font-size:10px; color:#666; font-weight:600;">만화로 쉽게 이해</div>
+            </div>
+        </div>
+
+        <div class="panel-arrow">→</div>
+
+        <!-- Panel 4: Burst finish -->
+        <div class="comic-panel">
+            <span class="panel-number">4</span>
+            <div class="burst-bg"></div>
+            <div class="panel-content" style="z-index:2;">
+                <div class="action-text">완벽!</div>
+                <div class="panel-emoji">🎉</div>
+                <div style="font-size:10px; color:#555; font-weight:700;">업무 마스터</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="stats">
+    <div class="stats-inner">
+        <div class="stat-item">
+            <div class="stat-number">3시간</div>
+            <div class="stat-label">실습 중심 워크숍</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">현장</div>
+            <div class="stat-label">F&F 사옥 7층 4번룸</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">4단계</div>
+            <div class="stat-label">체계적 커리큘럼</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">0원</div>
+            <div class="stat-label">코딩 경험 필요 없음</div>
+        </div>
+    </div>
+</section>
+
+<!-- What You'll Learn -->
+<section class="section" id="learn">
+    <div class="section-header">
+        <div class="section-tag">WHAT YOU'LL LEARN</div>
+        <h2 class="section-title">이 강의에서 배우는 것</h2>
+        <p class="section-desc">AI 도구를 활용해 업무 매뉴얼을 만화로 변환하는 전체 파이프라인을 실습합니다</p>
+    </div>
+    <div class="learn-grid">
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(139,92,246,0.12);">🖥️</div>
+            <h3>Claude Code 마스터</h3>
+            <p>Anthropic의 AI 코딩 CLI 도구인 Claude Code를 활용하여 프롬프트만으로 코드를 생성하고, 복잡한 자동화 파이프라인을 구축하는 방법을 배웁니다.</p>
+        </div>
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(77,142,255,0.12);">✨</div>
+            <h3>Gemini API 활용</h3>
+            <p>Google의 멀티모달 AI인 Gemini API를 사용하여 텍스트를 이미지로 변환하고, 만화 스타일의 비주얼을 자동 생성하는 기술을 익힙니다.</p>
+        </div>
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(255,80,180,0.12);">📖</div>
+            <h3>업무 매뉴얼 → 만화 변환</h3>
+            <p>복잡한 업무 프로세스 문서를 누구나 쉽게 이해할 수 있는 만화 형태의 가이드로 자동 변환하는 전체 워크플로우를 실습합니다.</p>
+        </div>
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(6,214,160,0.12);">⚡</div>
+            <h3>프롬프트 엔지니어링</h3>
+            <p>만화 생성에 최적화된 프롬프트 설계 기법과 멀티턴 대화를 통한 결과물 품질 향상 전략을 학습합니다.</p>
+        </div>
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(255,189,46,0.12);">🎸</div>
+            <h3>바이브코딩 실전</h3>
+            <p>코드를 직접 작성하지 않고 AI에게 의도와 분위기(바이브)를 전달하여 원하는 결과물을 만들어내는 바이브코딩의 핵심 원리와 실전 기법을 체험합니다.</p>
+        </div>
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(255,107,53,0.12);">🔄</div>
+            <h3>자동화 파이프라인 구축</h3>
+            <p>문서 파싱부터 만화 생성, HTML 패키징까지 전 과정을 하나의 자동화된 파이프라인으로 연결하는 방법을 배웁니다.</p>
+        </div>
+        <div class="learn-card fade-up">
+            <div class="learn-icon" style="background: rgba(255,189,46,0.12);">🎯</div>
+            <h3>실무 적용 노하우</h3>
+            <p>신입사원 온보딩 가이드, SOP 매뉴얼, 안전 교육 자료 등 실제 기업 환경에서 바로 활용할 수 있는 응용 사례를 다룹니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Curriculum -->
+<section class="section curriculum" id="curriculum">
+    <div class="section-header">
+        <div class="section-tag">CURRICULUM</div>
+        <h2 class="section-title">커리큘럼</h2>
+        <p class="section-desc">4개 챕터, 실습 중심의 단계별 학습 과정</p>
+    </div>
+    <div class="curriculum-inner">
+        <!-- Chapter 1 -->
+        <div class="cur-chapter fade-up">
+            <div class="cur-header" onclick="toggleChapter(this)">
+                <div class="cur-num" style="background: linear-gradient(135deg, #FF50B4, #8B5CF6);">01</div>
+                <div class="cur-header-text">
+                    <h3>AI 도구 셋업 & 환경 구성</h3>
+                    <p>Claude Code와 Gemini API 설치 및 기본 설정</p>
+                </div>
+                <span class="cur-toggle">＋</span>
+            </div>
+            <div class="cur-body open">
+                <ul class="cur-list">
+                    <li><strong>Claude Code 소개</strong> — Anthropic의 AI 코딩 CLI 도구 이해하기</li>
+                    <li><strong>환경 설정</strong> — Node.js, Claude Code 설치 및 API 키 발급</li>
+                    <li><strong>Gemini API 시작하기</strong> — Google AI Studio 가입 및 API 키 설정</li>
+                    <li><strong>첫 번째 실습</strong> — Claude Code로 간단한 스크립트 만들어보기</li>
+                    <li><strong>프로젝트 구조 설계</strong> — 만화 생성기의 폴더 구조와 모듈 설계</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chapter 2 -->
+        <div class="cur-chapter fade-up">
+            <div class="cur-header" onclick="toggleChapter(this)">
+                <div class="cur-num" style="background: linear-gradient(135deg, #8B5CF6, #4D8EFF);">02</div>
+                <div class="cur-header-text">
+                    <h3>업무 문서 파싱 & 시나리오 생성</h3>
+                    <p>텍스트 문서를 만화 시나리오로 변환하기</p>
+                </div>
+                <span class="cur-toggle">＋</span>
+            </div>
+            <div class="cur-body">
+                <ul class="cur-list">
+                    <li><strong>문서 분석 파이프라인</strong> — PDF/텍스트 문서를 구조화된 데이터로 파싱</li>
+                    <li><strong>핵심 단계 추출</strong> — 업무 프로세스를 핵심 단계로 분리하기</li>
+                    <li><strong>캐릭터 설정</strong> — 만화에 등장할 캐릭터와 상황 설계</li>
+                    <li><strong>시나리오 자동 생성</strong> — Claude Code로 만화 시나리오 프롬프트 작성</li>
+                    <li><strong>대화/나레이션 구성</strong> — 각 장면의 대사와 설명 자동 생성</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chapter 3 -->
+        <div class="cur-chapter fade-up">
+            <div class="cur-header" onclick="toggleChapter(this)">
+                <div class="cur-num" style="background: linear-gradient(135deg, #4D8EFF, #06D6A0);">03</div>
+                <div class="cur-header-text">
+                    <h3>Gemini API로 만화 이미지 생성</h3>
+                    <p>멀티모달 AI로 만화 패널 자동 생성하기</p>
+                </div>
+                <span class="cur-toggle">＋</span>
+            </div>
+            <div class="cur-body">
+                <ul class="cur-list">
+                    <li><strong>Gemini 이미지 생성 기초</strong> — 텍스트-투-이미지 API 호출 방법</li>
+                    <li><strong>만화 스타일 프롬프트</strong> — 일관된 캐릭터와 화풍을 위한 프롬프트 설계</li>
+                    <li><strong>패널 레이아웃 구성</strong> — 4컷/6컷 만화 레이아웃 자동 배치</li>
+                    <li><strong>말풍선 & 텍스트 오버레이</strong> — 생성된 이미지에 대화 말풍선 합성</li>
+                    <li><strong>품질 최적화</strong> — 결과물 반복 개선을 위한 프롬프트 튜닝 기법</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chapter 4 -->
+        <div class="cur-chapter fade-up">
+            <div class="cur-header" onclick="toggleChapter(this)">
+                <div class="cur-num" style="background: linear-gradient(135deg, #06D6A0, #FF50B4);">04</div>
+                <div class="cur-header-text">
+                    <h3>완성 & 배포: HTML 만화 가이드 패키징</h3>
+                    <p>최종 결과물을 웹 페이지로 패키징하기</p>
+                </div>
+                <span class="cur-toggle">＋</span>
+            </div>
+            <div class="cur-body">
+                <ul class="cur-list">
+                    <li><strong>HTML 템플릿 자동 생성</strong> — Claude Code로 반응형 웹 페이지 구축</li>
+                    <li><strong>인터랙티브 뷰어</strong> — 스크롤/클릭으로 넘기는 만화 뷰어 구현</li>
+                    <li><strong>전체 파이프라인 통합</strong> — 문서 입력 → 만화 생성 → HTML 출력 자동화</li>
+                    <li><strong>실무 활용 사례</strong> — 온보딩 가이드, SOP 매뉴얼, 교육 자료 제작</li>
+                    <li><strong>이메일 · 팀즈 자동 전송</strong> — 완성된 만화 가이드를 이메일 및 Microsoft Teams로 자동 발송하기</li>
+                    <li><strong>확장 아이디어</strong> — 다국어 지원, PDF 출력, 슬랙/노션 연동</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tools Used -->
+<section class="section" id="tools">
+    <div class="section-header">
+        <div class="section-tag">TOOLS</div>
+        <h2 class="section-title">활용 도구</h2>
+        <p class="section-desc">강의에서 사용하는 핵심 AI 도구들</p>
+    </div>
+    <div class="tools-grid">
+        <div class="tool-card fade-up">
+            <div class="tool-logo" style="background: rgba(139,92,246,0.12);">🤖</div>
+            <div>
+                <h3>Claude Code</h3>
+                <p>Anthropic의 공식 AI 코딩 CLI. 터미널에서 자연어로 코드를 생성하고, 파일을 수정하며, 복잡한 프로젝트를 자동으로 구축합니다.</p>
+            </div>
+        </div>
+        <div class="tool-card fade-up">
+            <div class="tool-logo" style="background: rgba(77,142,255,0.12);">✨</div>
+            <div>
+                <h3>Gemini API</h3>
+                <p>Google의 최신 멀티모달 AI. 텍스트를 이미지로 변환하는 네이티브 이미지 생성 기능으로 만화 패널을 자동 생성합니다.</p>
+            </div>
+        </div>
+        <div class="tool-card fade-up">
+            <div class="tool-logo" style="background: rgba(6,214,160,0.12);">🐍</div>
+            <div>
+                <h3>Python</h3>
+                <p>파이프라인의 핵심 언어. 문서 파싱, API 호출, 이미지 처리, HTML 생성까지 전 과정을 Python으로 구현합니다.</p>
+            </div>
+        </div>
+        <div class="tool-card fade-up">
+            <div class="tool-logo" style="background: rgba(255,80,180,0.12);">🌐</div>
+            <div>
+                <h3>HTML / CSS</h3>
+                <p>최종 만화 가이드를 아름다운 웹 페이지로 패키징. 반응형 디자인으로 모바일에서도 완벽하게 표시됩니다.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Process -->
+<section class="section" style="background: var(--bg-secondary);">
+    <div class="section-header">
+        <div class="section-tag">PROCESS</div>
+        <h2 class="section-title">만화 생성 워크플로우</h2>
+        <p class="section-desc">문서 한 장이 만화 가이드가 되기까지</p>
+    </div>
+    <div class="process-inner">
+        <div class="process-line"></div>
+        <div class="process-step fade-up">
+            <div class="process-dot" style="border-color: #FF50B4;"></div>
+            <h3>📄 업무 문서 입력</h3>
+            <p>SOP, 매뉴얼, 프로세스 문서 등 텍스트 기반의 업무 가이드를 입력합니다.</p>
+        </div>
+        <div class="process-step fade-up">
+            <div class="process-dot" style="border-color: #8B5CF6;"></div>
+            <h3>🧠 Claude Code가 시나리오 생성</h3>
+            <p>AI가 문서를 분석하여 핵심 단계를 추출하고, 캐릭터와 대사가 포함된 만화 시나리오를 자동 작성합니다.</p>
+        </div>
+        <div class="process-step fade-up">
+            <div class="process-dot" style="border-color: #4D8EFF;"></div>
+            <h3>🎨 Gemini API가 만화 이미지 생성</h3>
+            <p>각 시나리오를 멀티모달 AI가 만화 스타일의 이미지로 렌더링합니다.</p>
+        </div>
+        <div class="process-step fade-up">
+            <div class="process-dot" style="border-color: #06D6A0;"></div>
+            <h3>✅ HTML 만화 가이드 완성</h3>
+            <p>생성된 이미지와 텍스트를 반응형 웹 페이지로 자동 패키징하여 누구나 볼 수 있는 만화 가이드가 완성됩니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Instructor -->
+<section class="section" id="instructor">
+    <div class="section-header">
+        <div class="section-tag">INSTRUCTOR</div>
+        <h2 class="section-title">강사 소개</h2>
+    </div>
+    <div class="instructor-card fade-up">
+        <div class="instructor-avatar">👨‍💻</div>
+        <div class="instructor-info">
+            <h3>조한솔</h3>
+            <div class="instructor-role">F&F · AX팀</div>
+            <p class="instructor-bio">
+                F&F AX팀에서 AI와 데이터를 활용한 디지털 혁신 업무를 담당하고 있습니다.
+                Claude Code, Gemini API 등 최신 AI 도구를 실무에 적용하여
+                바이브코딩 기반의 업무 자동화와 콘텐츠 생성 파이프라인을 구축한 실전 경험을 바탕으로,
+                누구나 따라할 수 있는 실용적인 강의를 준비했습니다.
+            </p>
+            <div class="instructor-tags">
+                <span class="instructor-tag">Claude Code</span>
+                <span class="instructor-tag">Gemini API</span>
+                <span class="instructor-tag">Vibe Coding</span>
+                <span class="instructor-tag">AI Automation</span>
+                <span class="instructor-tag">Python</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+    <div class="cta-content">
+        <h2 class="cta-title">AI로 업무 가이드의 미래를 만들어보세요</h2>
+        <p class="cta-desc">복잡한 매뉴얼은 이제 그만! 만화로 소통하는 새로운 방법을 배워보세요.</p>
+        <a href="#" class="cta-btn">지금 수강 신청하기 →</a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <p>© 2026 FastCampus × 조한솔 — 클로드 코드 + Gemini API로 업무 가이드를 위한 만화 만들기</p>
+</footer>
+
+<script>
+    // Toggle Curriculum
+    function toggleChapter(header) {
+        const body = header.nextElementSibling;
+        const toggle = header.querySelector('.cur-toggle');
+        body.classList.toggle('open');
+        toggle.textContent = body.classList.contains('open') ? '−' : '＋';
+    }
+
+    // Fade-up on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Nav shrink on scroll
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('.nav');
+        if (window.scrollY > 50) {
+            nav.style.padding = '0';
+        } else {
+            nav.style.padding = '';
+        }
+    });
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+</script>
+
+</body>
+</html>
